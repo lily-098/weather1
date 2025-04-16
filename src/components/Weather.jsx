@@ -16,54 +16,51 @@ const Weather = () => {
 
     const[weatherData,setWeatherData]=useState(false);
 
-    const allicons={
-        "01d":sunny,
-    "01n ":sunny,
-    "02d" :cloudy,
-    "02n" :cloudy,
-    "03d" :storm,
-    "03n" :storm,
-    "04d" :drizzle,
-    "04n" :drizzle,
-    "09d" :rainy,
-    "09n" :rainy,
-     "10d" :rainy,
-    "10n" :rainy,
-     "13d" :snowflake,
-    "13n" :snowflake,
-    }
-    const api_key=import.meta.env.VITE_APP_ID;
-    const search =async(city) =>{
-        if(city === ""){
-            alert ("Enter City Name");
-            return ;
-        }
-        try{
-const url=`http://api.openweathermap.org/data/2.5/weather?q=${city}&units=metric&APPID=5d23e989722211caea73ed784f3338e3`;
-            const response=await fetch(url);
-              
-            const data=await response.json();
 
-            if(!response.ok){
-                alert(data.message);
+    const search = async (city) => {
+        if (city === "") {
+            alert("Enter City Name");
+            return;
+        }
+        try {
+            const url = `https://api.tomorrow.io/v4/weather/forecast?location=${city}&apikey=RLGsncXIlOr1wv2lhEtFgfuzhygl3Zup&units=metric`;
+            const response = await fetch(url);
+            const data = await response.json();
+    
+            if (!response.ok || !data.timelines) {
+                alert("Unable to fetch weather data");
                 return;
             }
-            console.log(data);
-            const icon=allicons[data.weather[0].icon] || clear_icon;
+    
+            const daily = data.timelines.daily[0].values;
+    
+            // WeatherCode icon mapping
+            const weatherCodeIcons = {
+                1000: sunny,
+                1100: sunny,
+                1101: cloudy,
+                1102: cloudy,
+                2000: snowflake,
+                4000: drizzle,
+                4200: rainy,
+                5000: snowflake,
+                8000: storm
+            };
+    
+            const icon = weatherCodeIcons[daily.weatherCode] || sunny;
+    
             setWeatherData({
-                humidity:data.main.humidity,
-                windSpeed : data.wind.speed,
-                temperature:Math.floor(data.main.temp),
-                location:data.name,
+                humidity: daily.humidityAvg,
+                windSpeed: daily.windSpeedAvg,
+                temperature: Math.floor(daily.temperatureMax),
+                location: data.location.name,
                 icon: icon
-
-            })
-        }catch(error){
-      setWeatherData(false)
-      console.error("Error in fetching weather data");
+            });
+        } catch (error) {
+            console.error("Error fetching Tomorrow.io data:", error);
+            setWeatherData(false);
         }
-    }
-
+    };
     useEffect(()=>{
         search("Gorakhpur")
     },[])
@@ -75,25 +72,32 @@ const url=`http://api.openweathermap.org/data/2.5/weather?q=${city}&units=metric
                 search(inputRef.current.value)
             }/>
         </div>
-     <img src={weatherData.icon} alt='' className='weather-icon'/>
-     <p className='temperature'>{weatherData.temperature}</p>
-     <p className='location'>{weatherData.location}</p>
-     <div className='weather-data'>
-        <div className='col'>
-            <img src={humidity} alt="" width={50} height={50}/>
-            <div>
-                <p>{weatherData.humidity} %</p>
-                <span>Humidity</span>
-            </div>
+        {weatherData ? (
+  <>
+    <img src={weatherData.icon} alt='' className='weather-icon' />
+    <p className='temperature'>{weatherData.temperature}°C</p>
+    <p className='location'>{weatherData.location}</p>
+    <div className='weather-data'>
+      <div className='col'>
+        <img src={humidity} alt="" width={50} height={50} />
+        <div>
+          <p>{weatherData.humidity} %</p>
+          <span>Humidity</span>
         </div>
-        <div className='col'>
-            <img src={wind} alt="" width={50} height={50}/>
-            <div>
-                <p>{weatherData.windSpeed} Km/hr</p>
-                <span>windSpeed</span>
-            </div>
+      </div>
+      <div className='col'>
+        <img src={wind} alt="" width={50} height={50} />
+        <div>
+          <p>{weatherData.windSpeed} Km/hr</p>
+          <span>Wind Speed</span>
         </div>
-     </div>
+      </div>
+    </div>
+  </>
+) : (
+  <p>Loading weather data...</p>
+)}
+
     </div>
   )
 }
