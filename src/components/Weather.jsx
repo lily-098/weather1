@@ -26,20 +26,20 @@ const Weather = () => {
     "04d" :drizzle,
     "04n" :drizzle,
     "09d" :rainy,
-    "09d" :rainy,
+    "09n" :rainy,
      "10d" :rainy,
-    "10d" :rainy,
+    "10n" :rainy,
      "13d" :snowflake,
-    "13d" :snowflake,}
-
+    "13n" :snowflake,
+    }
+    const api_key=import.meta.env.VITE_APP_ID;
     const search =async(city) =>{
         if(city === ""){
             alert ("Enter City Name");
             return ;
         }
         try{
-            const url=`https://api.openweathermap.org/data/2.5/weather?q=${city} &units=metric & appid=${import.meta.env.VITE_APP_ID}`;
-
+const url=`http://api.openweathermap.org/data/2.5/weather?q=${city}&units=metric&APPID=5d23e989722211caea73ed784f3338e3`;
             const response=await fetch(url);
               
             const data=await response.json();
