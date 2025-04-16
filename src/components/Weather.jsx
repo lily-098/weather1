@@ -9,9 +9,10 @@ import cloudy from '../assets/cloudy.png'
 import storm from '../assets/storm.png'
 import wind from '../assets/wind.png'
 import snowflake from '../assets/snowflake.png'
+import { useLocation } from './location'
 
 const Weather = () => {
-
+  const location = useLocation();
     const inputRef=useRef()
 
     const[weatherData,setWeatherData]=useState(false);
@@ -47,7 +48,7 @@ const Weather = () => {
                 8000: storm
             };
     
-            const icon = weatherCodeIcons[daily.weatherCode] || sunny;
+            const icon = weatherCodeIcons[daily.weatherCode] || sunny ;
     
             setWeatherData({
                 humidity: daily.humidityAvg,
@@ -60,10 +61,12 @@ const Weather = () => {
             console.error("Error fetching Tomorrow.io data:", error);
             setWeatherData(false);
         }
-    };
+    }
     useEffect(()=>{
-        search("Gorakhpur")
-    },[])
+       if(location && location.city){
+        search(location.city);
+       }
+    },[location]);
   return (
     <div className='weather'>
         <div className='search-bar'>

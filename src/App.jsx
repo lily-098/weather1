@@ -1,10 +1,13 @@
+import { LocationProvider } from './components/location';
 import React from 'react'
 import Weather from './components/Weather'
 
 const App = () => {
   return (
     <div className='app'>
-      <Weather></Weather>
+      <LocationProvider>
+      <Weather/>
+      </LocationProvider>
     </div>
   )
 }
