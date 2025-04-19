@@ -1,4 +1,5 @@
 import React, { useEffect, useState, useRef } from 'react'
+import axios from 'axios';
 import './Weather.css'
 import serch_icon from '../assets/search.png'
 import drizzle from '../assets/cloudy (1).png'
@@ -19,6 +20,7 @@ import './Modal.css';
 
 
 const Weather = ({city}) => {
+  
   const location = useLocation();
   const inputRef = useRef();
   const [darkMode, setDarkMode] = useState(false);
@@ -27,12 +29,16 @@ const Weather = ({city}) => {
   const [hourlyForecast, setHourlyForecast] = useState([]);
   const [hourStartIndex, setHourStartIndex] = useState(0);
   const [showModal, setShowModal] = useState(false);
-  const handleDataClick = () => {
-    setShowModal(true);
-  };
- const handleCloseModal = () => {
+  const [selectedDetail, setSelectedDetail] = useState(null);
+  const handleCloseModal = () => {
     setShowModal(false);
   };
+
+  const handleDataClick = (label, value, icon) => {
+    setSelectedDetail({ label, value, icon });
+    setShowModal(true);
+  };
+  
 
 const hoursPerSlide = 4;
 const visibleHourly = hourlyForecast.slice(hourStartIndex, hourStartIndex + hoursPerSlide);
@@ -66,12 +72,12 @@ const weatherCodeIcons = {
       return;
     }
     try {
-      const url = `https://api.tomorrow.io/v4/weather/forecast?location=${city}&apikey=RLGsncXIlOr1wv2lhEtFgfuzhygl3Zup&units=metric`;
-      const response = await fetch(url);
-      const data = await response.json();
-
-
-      if (!response.ok || !data.timelines) {
+      const apiKey = import.meta.env.VITE_WEATHER_API_KEY;
+const url = `https://api.tomorrow.io/v4/weather/forecast?location=${city}&apikey=${apiKey}&units=metric`;
+      const response = await axios.get(url); // Axios GET request
+      const data = response.data;
+  
+      if (!data.timelines) {
         alert("Unable to fetch weather data");
         return;
       }
@@ -154,8 +160,8 @@ const weatherCodeIcons = {
   
 
   return (
-    <div className={darkMode ? 'weather dark' : 'weather light'}>
-    <div className='weather'>
+    <div className={`weather ${darkMode ? 'dark' : 'light'}`}>
+
       <div className='search-bar'>
         <input
           onKeyDown={(e) => {
@@ -207,44 +213,49 @@ const weatherCodeIcons = {
           </div>
 
             {/*weather data oclick display method */}
-            <div className='weather-data' onClick={handleDataClick} style={{ cursor: 'pointer' }}>
-              < div className='col'>
+            <div className='weather-data'>
+              < div className='col'onClick={() => handleDataClick("Humidity", `${currentData.humidity}%`, humidity)}>
               <h4>Humidity</h4>
              <img src={humidity} alt="" width={30} />
                 <p>{currentData.humidity}%</p>
               </div>
-              <div className='col'>
+              <div className='col'onClick={() => handleDataClick("Wind Speed", `${currentData.windSpeed}km/hr`, wind)}>
               <h4>Wind Speed</h4>
                 <img src={wind} alt="" width={30} />
                 <p>{currentData.windSpeed} Km/h</p>
               </div>
-              <div className='col'>
+              <div className='col'onClick={() => handleDataClick("UV Index", `${currentData.uvIndex}`, uv)}>
               <h4>UV Index</h4>
               <img src={uv} alt="" width={30} />
               <p>{currentData.uvIndex}</p>
                </div>
-               <div className='col'>
+               <div className='col'onClick={() => handleDataClick("Wind Direc.", `${currentData.windDirection}°`, wd)}>
                <h4>Wind Direc.</h4>
                <img src={wd} alt="" width={30} />
                <p>{currentData.windDirection}°</p>
               </div>
-              <div className='col'>
+              <div className='col'onClick={() => handleDataClick("Pressure", `${currentData.pressure}%`, ap)}>
               <h4>Pressure</h4>
               <img src={ap} alt="" width={30} />
               <p>{currentData.pressure} hPa</p>
               </div>
-              <div className='col'>
+              <div className='col'onClick={() => handleDataClick("Visibility", `${currentData.visibility}%`, vv)}>
               <h4>Visibility</h4>
               <img src={vv} alt="" width={30} />
               <p>{currentData.visibility} km</p>
               </div></div>
 
-          <Modal show={showModal} onClose={handleCloseModal}>
-        <h2>Detailed Weather for {city}</h2>
-        <p>Temperature: 25°C</p>
-        <p>Humidity: 60%</p>
-        <p>Wind Speed: 10 km/h</p>
-      </Modal>
+              <Modal show={showModal} onClose={handleCloseModal}>
+  {selectedDetail && (
+    <div className={`modal-content ${darkMode ? 'dark' : 'light'}`}>
+      <h2>{selectedDetail.label}</h2>
+      <img src={selectedDetail.icon} alt={selectedDetail.label} width={40} />
+      <p>{selectedDetail.value}</p>
+    </div>
+  )}
+</Modal>
+
+
           {/*end of weather data display */}
 
           <h3>5-Day Forecast</h3>
@@ -271,7 +282,7 @@ const weatherCodeIcons = {
       ) : (
         <p>Loading weather data...</p>
       )}
-    </div></div>
+    </div>
   );
 }
 
